@@ -1,0 +1,3 @@
+default:
+  new_checkout: false
+  beta_banner: false

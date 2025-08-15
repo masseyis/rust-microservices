@@ -1,0 +1,51 @@
+name: Deploy
+on:
+  push:
+    branches: [ main ]
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-lambda
+        run: pipx install cargo-lambda
+
+      - name: Build Lambda artifacts
+        run: |
+          cargo lambda build --release --target x86_64-unknown-linux-musl -p api
+          cargo lambda build --release --target x86_64-unknown-linux-musl -p projector_orders
+          cargo lambda build --release --target x86_64-unknown-linux-musl -p projector_users
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::420053132780:role/GitHubActionsOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Upload artifacts for CDK (zip dirs)
+        run: |
+          mkdir -p infra/target/lambda
+          cp -r target/lambda/* infra/target/lambda/
+
+      - name: Setup Node & CDK
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: cd infra/cdk && npm ci && npm run build
+
+      - name: CDK deploy all stacks
+        run: cd infra/cdk && npx cdk deploy --all --require-approval never

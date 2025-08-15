@@ -1,0 +1,7 @@
+{
+  "flags": {
+    "new_checkout": { "state": "disabled" },
+    "beta_banner": { "state": "disabled" }
+  },
+  "values": {}
+}

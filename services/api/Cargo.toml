@@ -1,0 +1,16 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+common = { path = "../../crates/common" }
+lambda_http = { workspace = true }
+lambda_runtime = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+aws-config = { workspace = true }
+aws-sdk-eventbridge = { workspace = true }
+http = { workspace = true }
